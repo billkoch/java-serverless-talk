@@ -1,0 +1,55 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.palantir.graal' version '0.4.0'
+    id 'com.diffplug.gradle.spotless' version '3.24.2'
+}
+
+group = 'com.example'
+version = '0.0.1'
+sourceCompatibility = '1.8'
+
+application {
+    mainClassName = 'com.upmce.talks.serverless.java.Application'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': "${application.mainClassName}"
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+graal {
+    graalVersion '19.2.0'
+    mainClass project.mainClassName
+    outputName 'hello-world'
+    option '-H:+ReportExceptionStackTraces'
+    option '--static'
+}
+
+task buildDockerImage(type:Exec) {
+    dependsOn('assemble')
+    commandLine 'docker', 'build', '-t', "java-serverless-talk/${project.name}:${project.version}", '.'
+}
+
+dependencies {
+}
+
+spotless {
+    java {
+        googleJavaFormat()
+        trimTrailingWhitespace()
+        indentWithSpaces(2)
+        endWithNewline()
+    }
+    format 'gradle', {
+        target '**/*.gradle'
+        trimTrailingWhitespace()
+        indentWithSpaces(2)
+        endWithNewline()
+    }
+}
